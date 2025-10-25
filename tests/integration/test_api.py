@@ -1,5 +1,5 @@
 """Integration tests for API endpoints."""
-import pytest
+
 from fastapi.testclient import TestClient
 
 
@@ -20,7 +20,7 @@ class TestConfigEndpoint:
         new_config = {
             "target_os": "Ubuntu25.04",
             "generate_passwords": False,
-            "values": {"key1": "value1", "key2": "value2"}
+            "values": {"key1": "value1", "key2": "value2"},
         }
         response = client.put("/api/v1/config", json=new_config)
         assert response.status_code == 200
@@ -55,12 +55,12 @@ class TestKickstartEndpoint:
         params = {
             "mac": "00:11:22:33:44:55",
             "uuid": "550e8400-e29b-41d4-a716-446655440000",
-            "serial": "SN123456789"
+            "serial": "SN123456789",
         }
         response = client.get("/api/v1/ks", params=params)
         assert response.status_code == 200
         assert response.headers["content-type"] == "text/plain; charset=utf-8"
-        
+
         content = response.text
         assert "00:11:22:33:44:55" in content
         assert "550e8400-e29b-41d4-a716-446655440000" in content
@@ -72,7 +72,7 @@ class TestKickstartEndpoint:
             "mac": "00:11:22:33:44:55",
             "uuid": "550e8400-e29b-41d4-a716-446655440000",
             "serial": "SN123456789",
-            "template_name": "default"
+            "template_name": "default",
         }
         response = client.get("/api/v1/ks", params=params)
         assert response.status_code == 200
@@ -85,7 +85,7 @@ class TestKickstartEndpoint:
             "serial": "SN123456789",
             "hostname": "test-server",
             "timezone": "America/New_York",
-            "custom_var": "custom_value"
+            "custom_var": "custom_value",
         }
         response = client.get("/api/v1/ks", params=params)
         assert response.status_code == 200
@@ -108,7 +108,7 @@ class TestKickstartEndpoint:
             "mac": "00:11:22:33:44:55",
             "uuid": "550e8400-e29b-41d4-a716-446655440000",
             "serial": "SN123456789",
-            "template_name": "nonexistent_template"
+            "template_name": "nonexistent_template",
         }
         response = client.get("/api/v1/ks", params=params)
         assert response.status_code == 404
@@ -143,7 +143,7 @@ class TestPasswordPersistence:
         params = {
             "mac": "AA:BB:CC:DD:EE:FF",
             "uuid": "machine-uuid-123",
-            "serial": "SERIAL999"
+            "serial": "SERIAL999",
         }
 
         # First request
@@ -161,16 +161,8 @@ class TestPasswordPersistence:
 
     def test_different_machines_get_different_passwords(self, client: TestClient):
         """Test that different machines get different passwords."""
-        params1 = {
-            "mac": "11:22:33:44:55:66",
-            "uuid": "uuid-1",
-            "serial": "SERIAL001"
-        }
-        params2 = {
-            "mac": "AA:BB:CC:DD:EE:FF",
-            "uuid": "uuid-2",
-            "serial": "SERIAL002"
-        }
+        params1 = {"mac": "11:22:33:44:55:66", "uuid": "uuid-1", "serial": "SERIAL001"}
+        params2 = {"mac": "AA:BB:CC:DD:EE:FF", "uuid": "uuid-2", "serial": "SERIAL002"}
 
         response1 = client.get("/api/v1/ks", params=params1)
         response2 = client.get("/api/v1/ks", params=params2)
@@ -187,15 +179,11 @@ class TestPasswordPersistence:
         config_update = {
             "target_os": "Rocky9",
             "generate_passwords": False,
-            "values": {}
+            "values": {},
         }
         client.put("/api/v1/config", json=config_update)
 
-        params = {
-            "mac": "00:11:22:33:44:55",
-            "uuid": "test-uuid",
-            "serial": "TEST123"
-        }
+        params = {"mac": "00:11:22:33:44:55", "uuid": "test-uuid", "serial": "TEST123"}
 
         response = client.get("/api/v1/ks", params=params)
         assert response.status_code == 200
@@ -214,7 +202,7 @@ class TestMachinePasswordsExport:
         assert "attachment" in response.headers["content-disposition"]
 
         # Should have header row only
-        lines = response.text.strip().split('\n')
+        lines = response.text.strip().split("\n")
         assert len(lines) == 1
         assert "mac,uuid,serial" in lines[0]
 
@@ -224,7 +212,7 @@ class TestMachinePasswordsExport:
         params = {
             "mac": "AA:BB:CC:DD:EE:FF",
             "uuid": "test-uuid-1",
-            "serial": "SERIAL123"
+            "serial": "SERIAL123",
         }
         client.get("/api/v1/ks", params=params)
 
@@ -232,7 +220,7 @@ class TestMachinePasswordsExport:
         response = client.get("/api/v1/machines/export")
         assert response.status_code == 200
 
-        lines = response.text.strip().split('\n')
+        lines = response.text.strip().split("\n")
         assert len(lines) == 2  # Header + 1 data row
 
         # Check header
@@ -253,15 +241,11 @@ class TestConfigValues:
         config_update = {
             "target_os": "Rocky9",
             "generate_passwords": True,
-            "values": {"custom_key": "custom_value", "hostname_prefix": "prod"}
+            "values": {"custom_key": "custom_value", "hostname_prefix": "prod"},
         }
         client.put("/api/v1/config", json=config_update)
 
-        params = {
-            "mac": "00:11:22:33:44:55",
-            "uuid": "test-uuid",
-            "serial": "TEST123"
-        }
+        params = {"mac": "00:11:22:33:44:55", "uuid": "test-uuid", "serial": "TEST123"}
 
         response = client.get("/api/v1/ks", params=params)
         assert response.status_code == 200

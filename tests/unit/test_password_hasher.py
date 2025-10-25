@@ -1,5 +1,5 @@
 """Unit tests for password hasher."""
-import pytest
+
 from provisionR.utils import PasswordHasher
 
 

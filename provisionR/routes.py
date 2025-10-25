@@ -1,4 +1,5 @@
 """API routes for provisionR."""
+
 from typing import Annotated
 
 from fastapi import APIRouter, HTTPException, Query, Request, Depends
@@ -41,7 +42,7 @@ async def export_machine_passwords(db: Session = Depends(get_db)):
     return StreamingResponse(
         iter([csv_content]),
         media_type="text/csv",
-        headers={"Content-Disposition": "attachment; filename=machine_passwords.csv"}
+        headers={"Content-Disposition": "attachment; filename=machine_passwords.csv"},
     )
 
 
@@ -51,7 +52,9 @@ async def generate_kickstart(
     mac: Annotated[str, Query(description="MAC address of the machine")],
     uuid: Annotated[str, Query(description="UUID of the machine")],
     serial: Annotated[str, Query(description="Serial number of the machine")],
-    template_name: Annotated[str, Query(description="Template name (without .ks.j2)")] = "default",
+    template_name: Annotated[
+        str, Query(description="Template name (without .ks.j2)")
+    ] = "default",
     db: Session = Depends(get_db),
 ):
     """
@@ -71,16 +74,15 @@ async def generate_kickstart(
             uuid=uuid,
             serial=serial,
             template_name=template_name,
-            query_params=dict(request.query_params)
+            query_params=dict(request.query_params),
         )
         return rendered
     except TemplateNotFound:
         raise HTTPException(
             status_code=404,
-            detail=f"Template '{template_name}' not found. Expected file: {template_name}.ks.j2"
+            detail=f"Template '{template_name}' not found. Expected file: {template_name}.ks.j2",
         )
     except Exception as e:
         raise HTTPException(
-            status_code=500,
-            detail=f"Error rendering template: {str(e)}"
+            status_code=500, detail=f"Error rendering template: {str(e)}"
         )

@@ -1,4 +1,5 @@
 """FastAPI application factory and configuration."""
+
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
@@ -9,12 +10,13 @@ from provisionR.database import init_db
 
 NOT_FOUND = HTTPException(status_code=404, detail="Not found")
 
+
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application."""
     app = FastAPI(
         title="provisionR",
         description="An application for generating Kickstart files on the fly with a GUI for configuration.",
-        version="0.1.0"
+        version="0.1.0",
     )
 
     # Initialize database on startup
@@ -31,6 +33,7 @@ def create_app() -> FastAPI:
 
     # Serve static files
     if static_dir.exists():
+
         @app.get("/")
         async def serve_index():
             """Serve index.html at root."""
@@ -44,7 +47,6 @@ def create_app() -> FastAPI:
             """Serve static files from the static directory."""
             # Build the file path
             file_path = static_dir / full_path
-
 
             # Security: ensure the resolved path is within static_dir
             try:

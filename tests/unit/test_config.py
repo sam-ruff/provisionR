@@ -1,4 +1,5 @@
 """Unit tests for configuration management."""
+
 import pytest
 from sqlalchemy.orm import Session
 from provisionR.config import get_global_config_from_db, update_global_config_in_db
@@ -31,7 +32,7 @@ class TestConfigFunctions:
         new_config = GlobalConfig(
             target_os=TargetOS.UBUNTU2504,
             generate_passwords=False,
-            values={"custom_key": "custom_value"}
+            values={"custom_key": "custom_value"},
         )
         updated = update_global_config_in_db(db_session, new_config)
 
@@ -45,7 +46,7 @@ class TestConfigFunctions:
         new_config = GlobalConfig(
             target_os=TargetOS.UBUNTU2504,
             generate_passwords=False,
-            values={"test": "value"}
+            values={"test": "value"},
         )
         update_global_config_in_db(db_session, new_config)
 

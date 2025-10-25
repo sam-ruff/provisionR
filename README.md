@@ -187,9 +187,30 @@ uv sync --dev
 uv run uvicorn provisionR.app:create_app --factory --reload
 ```
 
+### Pre-commit Hooks
+
+The project uses pre-commit hooks with ruff for code quality:
+
+```bash
+# Install pre-commit hooks
+uv run pre-commit install
+
+# Run hooks manually on all files
+uv run pre-commit run --all-files
+
+# Run hooks on staged files only
+uv run pre-commit run
+```
+
+The pre-commit hook will:
+- Run ruff linting with auto-fix
+- Run ruff formatting
+- Check code before every commit
+
 ### Code Style
 
 The project uses:
+- **Ruff** for linting and formatting
 - Type hints throughout
 - Docstrings for all public functions
 - Service layer pattern for business logic

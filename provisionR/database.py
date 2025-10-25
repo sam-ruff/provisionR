@@ -1,4 +1,5 @@
 """Database configuration and session management."""
+
 import os
 from typing import Generator
 from sqlalchemy import create_engine

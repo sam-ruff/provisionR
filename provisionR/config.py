@@ -1,8 +1,8 @@
 """Global configuration management with database persistence."""
+
 import json
 from sqlalchemy.orm import Session
 from provisionR.models import GlobalConfig, DBGlobalConfig, TargetOS
-from provisionR.database import SessionLocal
 
 
 def get_global_config_from_db(db: Session) -> GlobalConfig:
