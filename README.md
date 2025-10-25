@@ -14,33 +14,65 @@ Generate Kickstart files on the fly with automatic password management and templ
 
 ## Quick Start
 
-### Using Docker (Recommended)
+### Using Docker Compose (Recommended for Production)
 
 ```bash
 # Clone the repository
 git clone https://github.com/yourusername/provisionR.git
 cd provisionR
 
-# Build and run with Docker
-docker build -t provisionr .
-docker run -p 8000:8000 provisionr
+# Build and run with Docker Compose
+docker-compose up
 
 # Access at http://localhost:8000
 ```
 
-### Local Development
-
-**Prerequisites:** Python 3.14+ and [uv](https://github.com/astral-sh/uv)
+### Using Docker
 
 ```bash
-# Install Python dependencies
+# Build and run with Docker
+docker build -t provisionr .
+docker run -p 8000:8000 provisionr
+```
+
+### Fast Development Workflow
+
+**Prerequisites:** Python 3.14+, [uv](https://github.com/astral-sh/uv), and [pnpm](https://pnpm.io/)
+
+This setup allows hot-reloading for both frontend and backend:
+
+```bash
+# Terminal 1 - Run the backend
+uv sync
+uv run uvicorn provisionR.app:create_app --factory --reload --host 0.0.0.0 --port 8000
+
+# Terminal 2 - Run the frontend dev server
+cd gui
+pnpm install
+pnpm dev
+# Frontend dev server runs on http://localhost:5173
+# API calls are proxied to http://localhost:8000
+```
+
+With this setup:
+- Backend runs on `localhost:8000` with auto-reload on code changes
+- Frontend runs on `localhost:5173` with hot module replacement
+- Frontend proxies `/api` requests to the backend
+- Changes to React components update instantly
+- Changes to Python code trigger backend reload
+
+### Production Build (Local)
+
+```bash
+# Install dependencies
 uv sync
 
-# Build the frontend (optional - for development with UI)
+# Build the frontend
 cd gui && pnpm install && pnpm generate && cd ..
 
 # Run the application
 uv run provisionr
+# Access at http://localhost:8000
 ```
 
 ### Running Tests
