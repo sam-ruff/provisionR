@@ -1,8 +1,18 @@
 """API routes for provisionR."""
 
+from pathlib import Path
 from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, Query, Request, Depends
+from fastapi import (
+    APIRouter,
+    HTTPException,
+    Query,
+    Request,
+    Depends,
+    UploadFile,
+    File,
+    Form,
+)
 from fastapi.responses import PlainTextResponse, StreamingResponse
 from jinja2 import TemplateNotFound
 from sqlalchemy.orm import Session
@@ -44,6 +54,62 @@ async def export_machine_passwords(db: Session = Depends(get_db)):
         media_type="text/csv",
         headers={"Content-Disposition": "attachment; filename=machine_passwords.csv"},
     )
+
+
+@api_router.get("/v1/templates/{template_name}", response_class=PlainTextResponse)
+async def get_template(template_name: str = "default"):
+    """Get the content of a template file."""
+    templates_dir = Path(__file__).parent / "templates"
+    template_file = templates_dir / f"{template_name}.ks.j2"
+
+    if not template_file.exists():
+        raise HTTPException(
+            status_code=404, detail=f"Template '{template_name}' not found"
+        )
+
+    try:
+        return template_file.read_text()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error reading template: {str(e)}")
+
+
+@api_router.post("/v1/templates")
+async def upload_template(
+    file: UploadFile = File(...),
+    template_name: str = Form(...),
+    use_as_default: bool = Form(False),
+):
+    """Upload a new template file."""
+    templates_dir = Path(__file__).parent / "templates"
+    templates_dir.mkdir(exist_ok=True)
+
+    # Validate template name
+    if not template_name or ".." in template_name or "/" in template_name:
+        raise HTTPException(status_code=400, detail="Invalid template name")
+
+    try:
+        # Read the uploaded file content
+        content = await file.read()
+        content_str = content.decode("utf-8")
+
+        # Save to the specified template name
+        template_file = templates_dir / f"{template_name}.ks.j2"
+        template_file.write_text(content_str)
+
+        # If use_as_default, also save as default.ks.j2
+        if use_as_default:
+            default_file = templates_dir / "default.ks.j2"
+            default_file.write_text(content_str)
+
+        return {
+            "message": "Template uploaded successfully",
+            "template_name": template_name,
+            "use_as_default": use_as_default,
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Error uploading template: {str(e)}"
+        )
 
 
 @api_router.get("/v1/ks", response_class=PlainTextResponse)
