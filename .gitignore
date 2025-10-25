@@ -152,3 +152,9 @@ Thumbs.db
 *.db
 *.sqlite
 *.sqlite3
+
+# Frontend
+gui/node_modules/
+gui/dist/
+gui/.vite/
+provisionR/static/

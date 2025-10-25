@@ -1,0 +1,9 @@
+services:
+  provisionr:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - PROVISIONR_DB_PATH=/app/data/provisionr.db

@@ -38,7 +38,7 @@ def create_app() -> FastAPI:
     # Serve static files
     if static_dir.exists():
 
-        @app.get("/")
+        @app.get("/", include_in_schema=False)
         async def serve_index():
             """Serve index.html at root."""
             index_file = static_dir / "index.html"
@@ -46,7 +46,7 @@ def create_app() -> FastAPI:
                 return FileResponse(index_file)
             return NOT_FOUND
 
-        @app.get("/{full_path:path}")
+        @app.get("/{full_path:path}", include_in_schema=False)
         async def serve_static(full_path: str):
             """Serve static files from the static directory."""
             # Build the file path
