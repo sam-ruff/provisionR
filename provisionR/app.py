@@ -1,5 +1,6 @@
 """FastAPI application factory and configuration."""
 
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
@@ -11,19 +12,22 @@ from provisionR.database import init_db
 NOT_FOUND = HTTPException(status_code=404, detail="Not found")
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Handle application lifespan events."""
+    # Startup: Initialize database
+    init_db()
+    yield
+
+
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application."""
     app = FastAPI(
         title="provisionR",
         description="An application for generating Kickstart files on the fly with a GUI for configuration.",
         version="0.1.0",
+        lifespan=lifespan,
     )
-
-    # Initialize database on startup
-    @app.on_event("startup")
-    async def startup_event():
-        """Initialize the database on application startup."""
-        init_db()
 
     # Include API routes
     app.include_router(api_router, prefix="/api")
