@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+ENV/
+env/
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+*.db
+
+# Node
+node_modules/
+gui/node_modules/
+gui/dist/
+gui/.vite/
+pnpm-lock.yaml
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Git
+.git/
+.gitignore
+
+# CI/CD
+.github/
+
+# Misc
+*.md
+README.md
+CONTRIBUTING.md
+.pre-commit-config.yaml
+.releaserc.json

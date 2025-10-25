@@ -12,7 +12,7 @@ from provisionR.config import get_global_config_from_db, update_global_config_in
 from provisionR.database import get_db
 from provisionR.services import KickstartService, ExportService
 
-api_router = APIRouter()
+api_router = APIRouter(tags=["provisionR API"])
 
 
 @api_router.get("/health")

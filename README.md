@@ -14,17 +14,33 @@ Generate Kickstart files on the fly with automatic password management and templ
 
 ## Quick Start
 
+### Using Docker (Recommended)
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/provisionR.git
+cd provisionR
+
+# Build and run with Docker
+docker build -t provisionr .
+docker run -p 8000:8000 provisionr
+
+# Access at http://localhost:8000
+```
+
+### Local Development
+
 **Prerequisites:** Python 3.14+ and [uv](https://github.com/astral-sh/uv)
 
 ```bash
-# Clone and install
-git clone https://github.com/yourusername/provisionR.git
-cd provisionR
+# Install Python dependencies
 uv sync
+
+# Build the frontend (optional - for development with UI)
+cd gui && pnpm install && pnpm generate && cd ..
 
 # Run the application
 uv run provisionr
-# API available at http://localhost:8000
 ```
 
 ### Running Tests
