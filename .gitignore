@@ -158,3 +158,4 @@ gui/node_modules/
 gui/dist/
 gui/.vite/
 provisionR/static/
+provisionR/templates/
