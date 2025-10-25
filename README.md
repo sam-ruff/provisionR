@@ -1,62 +1,36 @@
 # provisionR
 
-An application for generating Kickstart files on the fly with a GUI for configuration.
+Generate Kickstart files on the fly with automatic password management and templating.
 
 ## Features
 
-- 🚀 **FastAPI Backend** - High-performance async API
-- 🗄️ **SQLite Database** - Persistent storage with SQLAlchemy ORM
-- 🔐 **Password Generation** - Automatic generation of secure, memorable passphrases using petnames
-- 🔄 **Password Persistence** - Machines receive consistent passwords across requests
-- 📝 **Jinja2 Templates** - Flexible kickstart file templating
-- 📊 **CSV Export** - Export machine credentials
-- 🎨 **Static File Serving** - Built-in support for frontend applications
-- ✅ **Comprehensive Tests** - 31 integration and unit tests
+- FastAPI-based REST API for kickstart file generation
+- SQLite database for configuration and password storage
+- Automatic password generation using memorable passphrases (e.g. `vastly-caring-filly-111`)
+- Password persistence - machines get the same passwords on subsequent requests
+- Jinja2 templating for flexible kickstart customization
+- CSV export of machine credentials
+- Static file serving for web frontend
 
 ## Quick Start
 
-### Prerequisites
-
-- Python 3.14+
-- [uv](https://github.com/astral-sh/uv) (recommended) or pip
-
-### Installation
+**Prerequisites:** Python 3.14+ and [uv](https://github.com/astral-sh/uv)
 
 ```bash
-# Clone the repository
+# Clone and install
 git clone https://github.com/yourusername/provisionR.git
 cd provisionR
-
-# Install dependencies with uv
 uv sync
 
-# Or with pip
-pip install -e .
-```
-
-### Running the Application
-
-```bash
-# Using uv
-uv run main.py
-
-# Or using the installed command
+# Run the application
 uv run provisionr
-
-# The API will be available at http://localhost:8000
+# API available at http://localhost:8000
 ```
 
 ### Running Tests
 
 ```bash
-# Run all tests
 uv run pytest
-
-# Run with verbose output
-uv run pytest -v
-
-# Run specific test file
-uv run pytest tests/integration/test_api.py
 ```
 
 ## API Endpoints
