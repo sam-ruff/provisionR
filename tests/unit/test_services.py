@@ -1,13 +1,12 @@
 """Unit tests for service layer."""
+
 import pytest
-from jinja2 import Environment
 from sqlalchemy.orm import Session
-from unittest.mock import Mock
 
 from provisionR.services.kickstart_service import KickstartService
 from provisionR.services.password_service import PasswordService
 from provisionR.services.export_service import ExportService
-from provisionR.models import DBMachinePasswords, GlobalConfig, TargetOS
+from provisionR.models import GlobalConfig, TargetOS
 from provisionR.config import update_global_config_in_db
 from provisionR.database import SessionLocal
 
@@ -30,9 +29,7 @@ class TestPasswordService:
         service = PasswordService(db_session)
 
         root_pw, user_pw, luks_pw = service.get_or_create_passwords(
-            mac="AA:BB:CC:DD:EE:FF",
-            uuid="test-uuid",
-            serial="SERIAL123"
+            mac="AA:BB:CC:DD:EE:FF", uuid="test-uuid", serial="SERIAL123"
         )
 
         # Check passwords are generated
@@ -52,16 +49,12 @@ class TestPasswordService:
 
         # First call - generates new passwords
         root1, user1, luks1 = service.get_or_create_passwords(
-            mac="AA:BB:CC:DD:EE:FF",
-            uuid="test-uuid",
-            serial="SERIAL123"
+            mac="AA:BB:CC:DD:EE:FF", uuid="test-uuid", serial="SERIAL123"
         )
 
         # Second call - should return same passwords
         root2, user2, luks2 = service.get_or_create_passwords(
-            mac="AA:BB:CC:DD:EE:FF",
-            uuid="test-uuid",
-            serial="SERIAL123"
+            mac="AA:BB:CC:DD:EE:FF", uuid="test-uuid", serial="SERIAL123"
         )
 
         assert root1 == root2
@@ -86,7 +79,7 @@ OS: {{ target_os }}"""
             uuid="test-uuid-123",
             serial="SN999",
             template_string=template_string,
-            query_params={}
+            query_params={},
         )
 
         assert "MAC: AA:BB:CC:DD:EE:FF" in result
@@ -100,7 +93,7 @@ OS: {{ target_os }}"""
         config = GlobalConfig(
             target_os=TargetOS.ROCKY9,
             generate_passwords=True,
-            values={"custom_key": "custom_value", "hostname": "webserver01"}
+            values={"custom_key": "custom_value", "hostname": "webserver01"},
         )
         update_global_config_in_db(db_session, config)
 
@@ -114,7 +107,7 @@ Hostname: {{ hostname }}"""
             uuid="uuid",
             serial="serial",
             template_string=template_string,
-            query_params={}
+            query_params={},
         )
 
         assert "Custom: custom_value" in result
@@ -133,7 +126,7 @@ LUKS: {{ luks_password }}"""
             uuid="test-uuid",
             serial="SERIAL123",
             template_string=template_string,
-            query_params={}
+            query_params={},
         )
 
         # Check that passwords are present
@@ -142,11 +135,17 @@ LUKS: {{ luks_password }}"""
         assert "LUKS: " in result
 
         # Check that passwords are hashed (start with $6$ for SHA-512)
-        lines = result.split('\n')
+        lines = result.split("\n")
         for line in lines:
-            if line.startswith("Root:") or line.startswith("User:") or line.startswith("LUKS:"):
+            if (
+                line.startswith("Root:")
+                or line.startswith("User:")
+                or line.startswith("LUKS:")
+            ):
                 password_hash = line.split(": ")[1]
-                assert password_hash.startswith("$6$"), "Password should be hashed with SHA-512"
+                assert password_hash.startswith(
+                    "$6$"
+                ), "Password should be hashed with SHA-512"
 
     def test_generate_from_string_passwords_are_consistent(self, db_session: Session):
         """Test that the same machine gets the same hashed passwords."""
@@ -160,7 +159,7 @@ LUKS: {{ luks_password }}"""
             uuid="test-uuid",
             serial="SERIAL123",
             template_string=template_string,
-            query_params={}
+            query_params={},
         )
 
         # Second generation - same machine
@@ -169,7 +168,7 @@ LUKS: {{ luks_password }}"""
             uuid="test-uuid",
             serial="SERIAL123",
             template_string=template_string,
-            query_params={}
+            query_params={},
         )
 
         # Hashes will be different (different salts) but they hash the same plaintext password
@@ -189,7 +188,7 @@ Timezone: {{ timezone }}"""
             uuid="uuid",
             serial="serial",
             template_string=template_string,
-            query_params={"hostname": "server01", "timezone": "America/New_York"}
+            query_params={"hostname": "server01", "timezone": "America/New_York"},
         )
 
         assert "Hostname: server01" in result
@@ -204,7 +203,7 @@ class TestExportService:
         service = ExportService(db_session)
         csv_content = service.export_machine_passwords_csv()
 
-        lines = csv_content.strip().split('\n')
+        lines = csv_content.strip().split("\n")
         assert len(lines) == 1  # Header only
         assert "mac,uuid,serial" in lines[0]
 
@@ -213,16 +212,14 @@ class TestExportService:
         # Create a machine entry
         password_service = PasswordService(db_session)
         password_service.get_or_create_passwords(
-            mac="AA:BB:CC:DD:EE:FF",
-            uuid="test-uuid-1",
-            serial="SERIAL123"
+            mac="AA:BB:CC:DD:EE:FF", uuid="test-uuid-1", serial="SERIAL123"
         )
 
         # Export
         export_service = ExportService(db_session)
         csv_content = export_service.export_machine_passwords_csv()
 
-        lines = csv_content.strip().split('\n')
+        lines = csv_content.strip().split("\n")
         assert len(lines) == 2  # Header + 1 data row
 
         # Check data

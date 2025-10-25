@@ -1,4 +1,5 @@
 """Password generation utilities."""
+
 import secrets
 import petname
 

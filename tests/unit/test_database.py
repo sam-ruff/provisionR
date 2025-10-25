@@ -1,5 +1,4 @@
 """Unit tests for database module."""
-import pytest
 
 
 class TestDatabase:

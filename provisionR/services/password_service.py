@@ -1,5 +1,6 @@
 """Service for managing machine passwords."""
-from typing import Optional, Tuple
+
+from typing import Tuple
 from sqlalchemy.orm import Session
 from provisionR.models import DBMachinePasswords
 from provisionR.utils import PasswordGenerator
@@ -28,11 +29,15 @@ class PasswordService:
             Tuple of (root_password, user_password, luks_password)
         """
         # Check if we've seen this machine before
-        existing_machine = self.db.query(DBMachinePasswords).filter(
-            DBMachinePasswords.mac == mac,
-            DBMachinePasswords.uuid == uuid,
-            DBMachinePasswords.serial == serial
-        ).first()
+        existing_machine = (
+            self.db.query(DBMachinePasswords)
+            .filter(
+                DBMachinePasswords.mac == mac,
+                DBMachinePasswords.uuid == uuid,
+                DBMachinePasswords.serial == serial,
+            )
+            .first()
+        )
 
         if existing_machine:
             # Reuse existing passwords

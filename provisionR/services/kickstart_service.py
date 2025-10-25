@@ -1,7 +1,8 @@
 """Service for generating kickstart files."""
+
 from typing import Dict, Any, Optional
 from pathlib import Path
-from jinja2 import Environment, FileSystemLoader, Template
+from jinja2 import Environment, FileSystemLoader
 from sqlalchemy.orm import Session
 
 from provisionR.config import get_global_config_from_db
@@ -16,7 +17,7 @@ class KickstartService:
         self,
         db: Session,
         jinja_env: Optional[Environment] = None,
-        password_service: Optional[PasswordService] = None
+        password_service: Optional[PasswordService] = None,
     ):
         """
         Initialize the kickstart service.
@@ -43,7 +44,7 @@ class KickstartService:
         uuid: str,
         serial: str,
         template_name: str,
-        query_params: Dict[str, Any]
+        query_params: Dict[str, Any],
     ) -> str:
         """
         Generate a kickstart file from a template.
@@ -68,16 +69,20 @@ class KickstartService:
         context = dict(query_params)
 
         # Ensure required fields are present
-        context.update({
-            "mac": mac,
-            "uuid": uuid,
-            "serial": serial,
-        })
+        context.update(
+            {
+                "mac": mac,
+                "uuid": uuid,
+                "serial": serial,
+            }
+        )
 
         # Add config values to context
-        context.update({
-            "target_os": config.target_os.value,
-        })
+        context.update(
+            {
+                "target_os": config.target_os.value,
+            }
+        )
 
         # Add custom values from config to context
         context.update(config.values)
@@ -89,11 +94,13 @@ class KickstartService:
             )
 
             # Hash passwords for use in kickstart (--iscrypted)
-            context.update({
-                "root_password": self.password_hasher.hash_sha512(root_pw),
-                "user_password": self.password_hasher.hash_sha512(user_pw),
-                "luks_password": self.password_hasher.hash_sha512(luks_pw),
-            })
+            context.update(
+                {
+                    "root_password": self.password_hasher.hash_sha512(root_pw),
+                    "user_password": self.password_hasher.hash_sha512(user_pw),
+                    "luks_password": self.password_hasher.hash_sha512(luks_pw),
+                }
+            )
 
         # Load and render the template
         template_file = f"{template_name}.ks.j2"
@@ -108,7 +115,7 @@ class KickstartService:
         uuid: str,
         serial: str,
         template_string: str,
-        query_params: Dict[str, Any]
+        query_params: Dict[str, Any],
     ) -> str:
         """
         Generate a kickstart file from a template string (useful for testing).
@@ -130,16 +137,20 @@ class KickstartService:
         context = dict(query_params)
 
         # Ensure required fields are present
-        context.update({
-            "mac": mac,
-            "uuid": uuid,
-            "serial": serial,
-        })
+        context.update(
+            {
+                "mac": mac,
+                "uuid": uuid,
+                "serial": serial,
+            }
+        )
 
         # Add config values to context
-        context.update({
-            "target_os": config.target_os.value,
-        })
+        context.update(
+            {
+                "target_os": config.target_os.value,
+            }
+        )
 
         # Add custom values from config to context
         context.update(config.values)
@@ -151,11 +162,13 @@ class KickstartService:
             )
 
             # Hash passwords for use in kickstart (--iscrypted)
-            context.update({
-                "root_password": self.password_hasher.hash_sha512(root_pw),
-                "user_password": self.password_hasher.hash_sha512(user_pw),
-                "luks_password": self.password_hasher.hash_sha512(luks_pw),
-            })
+            context.update(
+                {
+                    "root_password": self.password_hasher.hash_sha512(root_pw),
+                    "user_password": self.password_hasher.hash_sha512(user_pw),
+                    "luks_password": self.password_hasher.hash_sha512(luks_pw),
+                }
+            )
 
         # Render the template string
         template = self.jinja_env.from_string(template_string)

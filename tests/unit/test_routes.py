@@ -1,5 +1,4 @@
 """Unit tests for route handlers."""
-import pytest
 
 
 class TestRouteLogic:

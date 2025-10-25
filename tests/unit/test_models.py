@@ -1,4 +1,5 @@
 """Unit tests for models."""
+
 import pytest
 from pydantic import ValidationError
 from provisionR.models import GlobalConfig, TargetOS
@@ -28,7 +29,7 @@ class TestGlobalConfig:
         config = GlobalConfig(
             target_os=TargetOS.UBUNTU2504,
             generate_passwords=False,
-            values={"key1": "value1", "key2": ["list", "of", "items"]}
+            values={"key1": "value1", "key2": ["list", "of", "items"]},
         )
         assert config.target_os == TargetOS.UBUNTU2504
         assert config.generate_passwords is False
