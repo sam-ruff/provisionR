@@ -1,0 +1,34 @@
+[project]
+name = "provisionr"
+version = "0.1.0"
+description = "An application for generating Kickstart files on the fly with a GUI for configuration."
+requires-python = ">=3.14"
+dependencies = [
+    "fastapi>=0.120.0",
+    "uvicorn>=0.34.0",
+    "jinja2>=3.1.0",
+    "python-multipart>=0.0.20",
+    "pytest>=8.4.2",
+    "sqlalchemy>=2.0.0",
+    "petname>=2.6",
+]
+
+[project.scripts]
+provisionr = "main:main"
+
+[tool.uv]
+package = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["provisionR"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.24.0",
+    "httpx>=0.28.0",
+]
