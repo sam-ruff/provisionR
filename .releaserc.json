@@ -61,7 +61,6 @@
         "baseImageName": "samruff/provisionr",
         "registries": [
           {
-            "url": "docker.io",
             "imageName": "samruff/provisionr"
           }
         ]
