@@ -159,3 +159,4 @@ gui/dist/
 gui/.vite/
 provisionR/static/
 provisionR/templates/
+.playwright-mcp
