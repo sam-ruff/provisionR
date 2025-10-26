@@ -56,7 +56,7 @@
     ],
     "@semantic-release/github",
     [
-      "@eclass/semantic-release-docker",
+      "@codedependant/semantic-release-docker",
       {
         "baseImageName": "samruff/provisionr",
         "registries": [

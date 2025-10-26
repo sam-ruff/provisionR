@@ -91,7 +91,7 @@ jobs:
             semantic-release \
             @semantic-release/git \
             @semantic-release/exec \
-            @eclass/semantic-release-docker \
+            @codedependant/semantic-release-docker \
             conventional-changelog-conventionalcommits
 
       - name: Release
