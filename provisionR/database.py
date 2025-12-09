@@ -13,7 +13,8 @@ if TEST_MODE:
     SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
     connect_args = {"check_same_thread": False}
 else:
-    SQLALCHEMY_DATABASE_URL = "sqlite:///./provisionr.db"
+    db_path = os.getenv("PROVISIONR_DB_PATH", "./provisionr.db")
+    SQLALCHEMY_DATABASE_URL = f"sqlite:///{db_path}"
     connect_args = {"check_same_thread": False}
 
 # Create engine

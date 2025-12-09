@@ -30,10 +30,14 @@ docker-compose up
 ### Using Docker
 
 ```bash
-# Build and run with Docker
+# Build the image
 docker build -t provisionr .
+
+# Run the container
 docker run -p 8000:8000 provisionr
 ```
+
+The image uses Google's distroless base and runs as a non-root user for security.
 
 ### Fast Development Workflow
 
