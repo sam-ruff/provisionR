@@ -58,8 +58,10 @@
     [
       "@codedependant/semantic-release-docker",
       {
-        "dockerImage": "samruff/provisionr",
-        "dockerRegistry": "docker.io"
+        "dockerRegistry": "registry.tail2d6fbe.ts.net",
+        "dockerProject": "provisionr",
+        "dockerImage": "provisionr",
+        "dockerLogin": false
       }
     ]
   ]
