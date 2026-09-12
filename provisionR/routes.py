@@ -1,6 +1,5 @@
 """API routes for provisionR."""
 
-from pathlib import Path
 from typing import Annotated
 
 from fastapi import (
@@ -21,6 +20,10 @@ from provisionR.models import GlobalConfig
 from provisionR.config import get_global_config_from_db, update_global_config_in_db
 from provisionR.database import get_db
 from provisionR.services import KickstartService, ExportService
+from provisionR.template_storage import (
+    template_search_paths,
+    writable_template_directory,
+)
 
 api_router = APIRouter(tags=["provisionR API"])
 
@@ -59,10 +62,15 @@ async def export_machine_passwords(db: Session = Depends(get_db)):
 @api_router.get("/v1/templates/{template_name}", response_class=PlainTextResponse)
 async def get_template(template_name: str = "default"):
     """Get the content of a template file."""
-    templates_dir = Path(__file__).parent / "templates"
-    template_file = templates_dir / f"{template_name}.ks.j2"
-
-    if not template_file.exists():
+    template_file = next(
+        (
+            directory / f"{template_name}.ks.j2"
+            for directory in template_search_paths()
+            if (directory / f"{template_name}.ks.j2").is_file()
+        ),
+        None,
+    )
+    if template_file is None:
         raise HTTPException(
             status_code=404, detail=f"Template '{template_name}' not found"
         )
@@ -80,8 +88,8 @@ async def upload_template(
     use_as_default: bool = Form(False),
 ):
     """Upload a new template file."""
-    templates_dir = Path(__file__).parent / "templates"
-    templates_dir.mkdir(exist_ok=True)
+    templates_dir = writable_template_directory()
+    templates_dir.mkdir(parents=True, exist_ok=True)
 
     # Validate template name
     if not template_name or ".." in template_name or "/" in template_name:

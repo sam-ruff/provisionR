@@ -1,17 +1,26 @@
 """Pytest configuration and fixtures."""
 
 import os
+from pathlib import Path
+from tempfile import TemporaryDirectory
+
 import pytest
 from fastapi.testclient import TestClient
-from provisionR.app import create_app
+
+test_storage = TemporaryDirectory(prefix="provisionr-tests-")
+os.environ["PROVISIONR_TEST_MODE"] = "false"
+os.environ["PROVISIONR_DB_PATH"] = str(Path(test_storage.name) / "test.db")
+os.environ["PROVISIONR_TEMPLATE_DIR"] = str(Path(test_storage.name) / "templates")
 
 
 @pytest.fixture(scope="session", autouse=True)
-def set_test_mode():
-    """Set test mode environment variable for all tests."""
-    os.environ["PROVISIONR_TEST_MODE"] = "true"
+def isolated_storage():
+    """Keep tests away from checkout databases and bundled templates."""
     yield
-    os.environ.pop("PROVISIONR_TEST_MODE", None)
+    from provisionR.database import engine
+
+    engine.dispose()
+    test_storage.cleanup()
 
 
 @pytest.fixture(autouse=True)
@@ -34,5 +43,7 @@ def reset_database():
 @pytest.fixture
 def client():
     """Create a test client for the FastAPI app."""
+    from provisionR.app import create_app
+
     app = create_app()
     return TestClient(app)

@@ -1,13 +1,13 @@
 """Service for generating kickstart files."""
 
 from typing import Dict, Any, Optional
-from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
 from sqlalchemy.orm import Session
 
 from provisionR.config import get_global_config_from_db
 from provisionR.services.password_service import PasswordService
 from provisionR.utils import PasswordHasher
+from provisionR.template_storage import template_search_paths
 
 
 class KickstartService:
@@ -33,8 +33,9 @@ class KickstartService:
 
         # Set up Jinja2 environment
         if jinja_env is None:
-            templates_dir = Path(__file__).parent.parent / "templates"
-            self.jinja_env = Environment(loader=FileSystemLoader(str(templates_dir)))
+            self.jinja_env = Environment(
+                loader=FileSystemLoader(template_search_paths())
+            )
         else:
             self.jinja_env = jinja_env
 

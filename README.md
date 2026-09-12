@@ -176,7 +176,10 @@ Password generation can be disabled through the configuration API.
 
 ## Database
 
-The application uses SQLite (`provisionr.db`) for storing configuration and machine passwords. Tests use an in-memory database when `PROVISIONR_TEST_MODE=true` is set.
+The application uses SQLite for configuration and machine passwords. The container stores
+its database at `/data/provisionr.db` and uploaded templates at `/data/templates`; mount
+`/data` persistently. `PROVISIONR_DB_PATH` and `PROVISIONR_TEMPLATE_DIR` override these paths.
+Uploaded templates take precedence over bundled defaults. Tests use disposable storage.
 
 ## Development
 
