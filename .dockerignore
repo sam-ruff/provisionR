@@ -19,7 +19,9 @@ node_modules/
 gui/node_modules/
 gui/dist/
 gui/.vite/
-pnpm-lock.yaml
+.env
+.env.*
+.claude/
 
 # IDE
 .idea/

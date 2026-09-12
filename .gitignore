@@ -154,6 +154,7 @@ Thumbs.db
 *.sqlite3
 
 # Frontend
+node_modules/
 gui/node_modules/
 gui/dist/
 gui/.vite/

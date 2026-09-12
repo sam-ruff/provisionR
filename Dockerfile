@@ -1,98 +1,32 @@
-# Build stage for frontend
-FROM node:20-alpine AS frontend-builder
-
-# Install pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
-
+FROM node:24.17.0-alpine@sha256:156b55f92e98ccd5ef49578a8cea0df4679826564bad1c9d4ef04462b9f0ded6 AS frontend-builder
+RUN corepack enable && corepack prepare pnpm@10.30.3 --activate
 WORKDIR /app/gui
-
-# Copy frontend package files
-COPY gui/package.json gui/pnpm-lock.yaml* ./
-
-# Install dependencies
+COPY gui/package.json gui/pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
-
-# Copy frontend source
 COPY gui/ ./
+RUN pnpm build
 
-# Build frontend (outputs to ../provisionR/static)
-RUN pnpm generate
-
-# Python build stage
-FROM python:3.14-slim AS python-builder
-
+FROM ghcr.io/astral-sh/uv:0.12.6@sha256:88bc6eb1ccd4b82efd0e1b530caffabddf50dc2bf612e66c14ea25b8ee8a4d3d AS uv
+FROM cgr.dev/chainguard/python:latest-dev@sha256:b0bc807f4334fea6adaac0f4dfbde255b9938ca957facb26eaed8bb448fce473 AS python-builder
+USER root
+COPY --from=uv /uv /usr/local/bin/uv
+ENV UV_PYTHON_DOWNLOADS=never UV_PYTHON=/usr/bin/python3
 WORKDIR /app
-
-# Install uv
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
-
-# Copy Python project files
-COPY pyproject.toml uv.lock* ./
+COPY pyproject.toml uv.lock ./
 COPY provisionR/ ./provisionR/
 COPY main.py ./
-
-# Copy built frontend from previous stage
 COPY --from=frontend-builder /app/provisionR/static ./provisionR/static
+RUN uv sync --locked --no-dev --no-editable && mkdir /data
 
-# Install Python dependencies
-RUN uv sync --frozen --no-dev
-
-# Gather all required shared libraries for Python and its modules
-RUN mkdir -p /dist/lib/x86_64-linux-gnu /dist/lib64 /dist/usr/local/lib /dist/data && \
-    # Copy the dynamic linker
-    cp /lib64/ld-linux-x86-64.so.2 /dist/lib64/ && \
-    # Copy libpython
-    cp -r /usr/local/lib/libpython3.14.so* /dist/usr/local/lib/ && \
-    # Find all .so files and extract their library dependencies
-    find /usr/local/bin/python3.14 \
-         /usr/local/lib/python3.14/lib-dynload/*.so \
-         /app/.venv/lib/python3.14/site-packages -name '*.so' -type f 2>/dev/null | \
-    xargs -I {} ldd {} 2>/dev/null | \
-    grep -o '/lib[^ ]*' | sort -u | \
-    while read lib; do \
-        cp -L "$lib" /dist/lib/x86_64-linux-gnu/ 2>/dev/null || true; \
-    done && \
-    # Copy SSL certificates
-    cp -r /etc/ssl /dist/etc/ssl 2>/dev/null || mkdir -p /dist/etc/ssl
-
-# Distroless final stage - scratch with only what we need
-FROM scratch
-
-# Copy shared libraries
-COPY --from=python-builder /dist/lib/x86_64-linux-gnu /lib/x86_64-linux-gnu
-COPY --from=python-builder /dist/lib64 /lib64
-COPY --from=python-builder /dist/usr/local/lib /usr/local/lib
-COPY --from=python-builder /dist/etc /etc
-
-# Copy Python interpreter
-COPY --from=python-builder /usr/local/bin/python3.14 /usr/local/bin/python3.14
-
-# Copy Python standard library
-COPY --from=python-builder /usr/local/lib/python3.14 /usr/local/lib/python3.14
-
-# Copy passwd/group for nonroot user
-COPY --from=gcr.io/distroless/python3-debian12:nonroot /etc/passwd /etc/passwd
-COPY --from=gcr.io/distroless/python3-debian12:nonroot /etc/group /etc/group
-
+FROM cgr.dev/chainguard/python:latest@sha256:b5decb00aa1cb65ab71bb3f6632a44bb8e6fd8d661de1f0342fd513a06837b9a
 WORKDIR /app
-
-# Copy application and venv from builder
-COPY --from=python-builder --chown=65532:65532 /app /app
-
-# Create writable data directory for SQLite database
-COPY --from=python-builder --chown=65532:65532 /dist/data /data
-
-# Set environment
-ENV PYTHONPATH=/app/.venv/lib/python3.14/site-packages:/app \
-    PYTHONDONTWRITEBYTECODE=1 \
+COPY --from=python-builder --chown=65532:65532 /app/.venv /app/.venv
+COPY --from=python-builder --chown=65532:65532 /app/provisionR /app/provisionR
+COPY --from=python-builder --chown=65532:65532 /data /data
+ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PROVISIONR_DB_PATH=/data/provisionr.db
-
-# Expose port
-EXPOSE 8000
-
-# Run as nonroot user (uid 65532)
+    PROVISIONR_DB_PATH=/data/provisionr.db \
+    PROVISIONR_TEMPLATE_DIR=/data/templates
 USER 65532:65532
-
-# Run the application
-ENTRYPOINT ["/usr/local/bin/python3.14", "-m", "uvicorn", "provisionR.app:create_app", "--factory", "--host", "0.0.0.0", "--port", "8000"]
+EXPOSE 8000
+ENTRYPOINT ["/app/.venv/bin/python", "-m", "uvicorn", "provisionR.app:create_app", "--factory", "--host", "0.0.0.0", "--port", "8000"]
