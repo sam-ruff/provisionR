@@ -19,6 +19,11 @@ COPY --from=frontend-builder /app/provisionR/static ./provisionR/static
 RUN uv sync --locked --no-dev --no-editable && mkdir /data
 
 FROM cgr.dev/chainguard/python:latest@sha256:b5decb00aa1cb65ab71bb3f6632a44bb8e6fd8d661de1f0342fd513a06837b9a
+ARG GIT_SHA
+ARG VERSION
+LABEL org.opencontainers.image.source="https://github.com/sam-ruff/provisionR" \
+    org.opencontainers.image.revision="${GIT_SHA}" \
+    org.opencontainers.image.version="${VERSION}"
 WORKDIR /app
 COPY --from=python-builder --chown=65532:65532 /app/.venv /app/.venv
 COPY --from=python-builder --chown=65532:65532 /app/provisionR /app/provisionR

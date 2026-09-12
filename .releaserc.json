@@ -11,7 +11,8 @@
         "dockerImage": "provisionr",
         "dockerTags": ["latest", "sha-{{git_sha}}", "v{{version}}", "{{major}}.{{minor}}"],
         "dockerLogin": false,
-        "dockerPlatform": ["linux/amd64"]
+        "dockerPlatform": ["linux/amd64"],
+        "dockerArgs": {"GIT_SHA": "{{git_sha}}", "VERSION": "{{version}}"}
       }
     ],
     [
