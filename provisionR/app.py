@@ -8,6 +8,7 @@ from fastapi.responses import FileResponse
 
 from provisionR.routes import api_router
 from provisionR.database import init_db
+from provisionR.demo import DemoModeMiddleware, demo_mode_from_environment
 
 NOT_FOUND = HTTPException(status_code=404, detail="Not found")
 
@@ -20,14 +21,22 @@ async def lifespan(app: FastAPI):
     yield
 
 
-def create_app() -> FastAPI:
-    """Create and configure the FastAPI application."""
+def create_app(demo_mode: bool | None = None) -> FastAPI:
+    """Create and configure the FastAPI application.
+
+    demo_mode defaults to PROVISIONR_DEMO_MODE; when on, the app is read-only.
+    """
     app = FastAPI(
         title="provisionR",
         description="An application for generating Kickstart files on the fly with a GUI for configuration.",
         version="0.1.0",
         lifespan=lifespan,
     )
+
+    if demo_mode is None:
+        demo_mode = demo_mode_from_environment()
+    if demo_mode:
+        app.add_middleware(DemoModeMiddleware)
 
     # Include API routes
     app.include_router(api_router, prefix="/api")

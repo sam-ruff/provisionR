@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { refusalDetail } from '../refusal'
 
 export function KickstartSection() {
   const [template, setTemplate] = useState<string | null>(null)
@@ -49,6 +50,12 @@ export function KickstartSection() {
         body: formData,
       })
 
+      const refused = await refusalDetail(response)
+      if (refused) {
+        setError(refused)
+        setLoading(false)
+        return
+      }
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
@@ -73,6 +80,12 @@ export function KickstartSection() {
     setError(null)
     try {
       const response = await fetch(`/api/v1/ks?mac=00:11:22:33:44:55&uuid=test-uuid-12345&serial=TEST-SN-001&template_name=${templateName}`)
+      const refused = await refusalDetail(response)
+      if (refused) {
+        setError(refused)
+        setLoading(false)
+        return
+      }
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }

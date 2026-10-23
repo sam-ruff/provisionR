@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { refusalDetail } from '../refusal'
 
 interface Config {
   target_os: 'Rocky9' | 'Ubuntu25.04'
@@ -64,6 +65,10 @@ export function ConfigSection() {
         body: JSON.stringify(newConfig),
       })
 
+      const refused = await refusalDetail(response)
+      if (refused) {
+        throw new Error(refused)
+      }
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }

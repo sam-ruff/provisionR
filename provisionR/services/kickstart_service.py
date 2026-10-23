@@ -2,6 +2,7 @@
 
 from typing import Dict, Any, Optional
 from jinja2 import Environment, FileSystemLoader
+from jinja2.sandbox import ImmutableSandboxedEnvironment
 from sqlalchemy.orm import Session
 
 from provisionR.config import get_global_config_from_db
@@ -31,9 +32,9 @@ class KickstartService:
         self.password_service = password_service or PasswordService(db)
         self.password_hasher = PasswordHasher()
 
-        # Set up Jinja2 environment
+        # Templates can be uploaded over the API, so they render sandboxed.
         if jinja_env is None:
-            self.jinja_env = Environment(
+            self.jinja_env = ImmutableSandboxedEnvironment(
                 loader=FileSystemLoader(template_search_paths())
             )
         else:

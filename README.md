@@ -181,6 +181,15 @@ its database at `/data/provisionr.db` and uploaded templates at `/data/templates
 `/data` persistently. `PROVISIONR_DB_PATH` and `PROVISIONR_TEMPLATE_DIR` override these paths.
 Uploaded templates take precedence over bundled defaults. Tests use disposable storage.
 
+Templates are rendered in Jinja2's sandbox, since anyone who can reach the API can upload one.
+
+## Demo Mode
+
+Set `PROVISIONR_DEMO_MODE=true` to run a public, read-only demo. Only `GET` and `HEAD` are
+accepted, and kickstart generation and the password export are refused even for `GET`, so
+nothing can create a machine, change the configuration, upload a template or read a password.
+Refused requests get a 403 with a short explanation, which the UI shows.
+
 ## Development
 
 ### Running in Development Mode
