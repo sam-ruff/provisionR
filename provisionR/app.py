@@ -21,10 +21,13 @@ async def lifespan(app: FastAPI):
     yield
 
 
-def create_app(demo_mode: bool | None = None) -> FastAPI:
+def create_app(
+    demo_mode: bool | None = None, static_dir: Path | None = None
+) -> FastAPI:
     """Create and configure the FastAPI application.
 
     demo_mode defaults to PROVISIONR_DEMO_MODE; when on, the app is read-only.
+    static_dir defaults to the GUI build output in provisionR/static.
     """
     app = FastAPI(
         title="provisionR",
@@ -42,7 +45,8 @@ def create_app(demo_mode: bool | None = None) -> FastAPI:
     app.include_router(api_router, prefix="/api")
 
     # Get the static directory path
-    static_dir = Path(__file__).parent / "static"
+    if static_dir is None:
+        static_dir = Path(__file__).parent / "static"
 
     # Serve static files
     if static_dir.exists():
@@ -65,7 +69,7 @@ def create_app(demo_mode: bool | None = None) -> FastAPI:
             try:
                 file_path = file_path.resolve()
                 static_dir_resolved = static_dir.resolve()
-                if not str(file_path).startswith(str(static_dir_resolved)):
+                if not file_path.is_relative_to(static_dir_resolved):
                     # Path traversal attempt
                     raise NOT_FOUND
             except (ValueError, OSError):

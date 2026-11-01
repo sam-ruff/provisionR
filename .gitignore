@@ -160,4 +160,5 @@ gui/dist/
 gui/.vite/
 provisionR/static/
 provisionR/templates/
+.pnpm-store/
 .playwright-mcp
