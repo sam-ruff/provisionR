@@ -1,12 +1,12 @@
-FROM node:24.17.0-alpine@sha256:156b55f92e98ccd5ef49578a8cea0df4679826564bad1c9d4ef04462b9f0ded6 AS frontend-builder
-RUN corepack enable && corepack prepare pnpm@10.30.3 --activate
+FROM node:26.13.0-alpine@sha256:c6ad9e9c1d80f6eb607c26b4b0a132ff7a2344fad1c78ea3baa2a7d4c8de6d94 AS frontend-builder
+RUN npm install -g pnpm@12.16.1
 WORKDIR /app/gui
 COPY gui/package.json gui/pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 COPY gui/ ./
 RUN pnpm build
 
-FROM ghcr.io/astral-sh/uv:0.12.6@sha256:88bc6eb1ccd4b82efd0e1b530caffabddf50dc2bf612e66c14ea25b8ee8a4d3d AS uv
+FROM ghcr.io/astral-sh/uv:0.13.6@sha256:af22a52f5eafef3d78e551599d405c02df61919d18028f0cea8eda93bc9986d0 AS uv
 FROM cgr.dev/chainguard/python:latest-dev@sha256:b0bc807f4334fea6adaac0f4dfbde255b9938ca957facb26eaed8bb448fce473 AS python-builder
 USER root
 COPY --from=uv /uv /usr/local/bin/uv

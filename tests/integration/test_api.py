@@ -1,6 +1,11 @@
 """Integration tests for API endpoints."""
 
+from pathlib import Path
+
+import pytest
 from fastapi.testclient import TestClient
+
+from provisionR.app import create_app
 
 
 class TestConfigEndpoint:
@@ -115,24 +120,57 @@ class TestKickstartEndpoint:
         assert "not found" in response.json()["detail"].lower()
 
 
+@pytest.fixture
+def static_client(tmp_path: Path) -> TestClient:
+    """Serve a built-GUI stand-in so tests don't depend on `pnpm build` output."""
+    static_dir = tmp_path / "static"
+    (static_dir / "assets").mkdir(parents=True)
+    (static_dir / "index.html").write_text("<!doctype html><title>provisionR</title>")
+    (static_dir / "assets" / "app.js").write_text("console.log('ok')")
+    sibling = tmp_path / "static-private"
+    sibling.mkdir()
+    (sibling / "secret.txt").write_text("secret")
+    return TestClient(create_app(static_dir=static_dir))
+
+
 class TestStaticFileServing:
     """Tests for static file serving."""
 
-    def test_serve_index_at_root(self, client: TestClient):
+    def test_serve_index_at_root(self, static_client: TestClient):
         """Test that index.html is served at the root path."""
-        response = client.get("/")
+        response = static_client.get("/")
         assert response.status_code == 200
         assert "text/html" in response.headers["content-type"]
+        assert "<title>provisionR</title>" in response.text
 
-    def test_serve_nonexistent_file_returns_404(self, client: TestClient):
+    def test_serve_asset(self, static_client: TestClient):
+        """Test that built assets are served from the static directory."""
+        response = static_client.get("/assets/app.js")
+        assert response.status_code == 200
+        assert response.text == "console.log('ok')"
+
+    def test_serve_nonexistent_file_returns_404(self, static_client: TestClient):
         """Test that requesting a non-existent file returns 404."""
-        response = client.get("/nonexistent.txt")
+        response = static_client.get("/nonexistent.txt")
         assert response.status_code == 404
 
-    def test_path_traversal_blocked(self, client: TestClient):
+    def test_path_traversal_blocked(self, static_client: TestClient):
         """Test that path traversal attempts are blocked."""
-        response = client.get("/../../../etc/passwd")
+        response = static_client.get("/../../../etc/passwd")
         assert response.status_code == 404
+
+    def test_sibling_directory_with_shared_prefix_blocked(
+        self, static_client: TestClient
+    ):
+        """A sibling such as static-private/ must not pass the containment check."""
+        response = static_client.get("/..%2fstatic-private%2fsecret.txt")
+        assert response.status_code == 404
+
+    def test_missing_static_dir_serves_api_only(self, tmp_path: Path):
+        """Without a GUI build the API still works and / is not routed."""
+        client = TestClient(create_app(static_dir=tmp_path / "absent"))
+        assert client.get("/").status_code == 404
+        assert client.get("/api/v1/config").status_code == 200
 
 
 class TestPasswordPersistence:
