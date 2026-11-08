@@ -4,7 +4,7 @@ import { refusalDetail } from '../refusal'
 interface Config {
   target_os: 'Rocky9' | 'Ubuntu25.04'
   generate_passwords: boolean
-  values: Record<string, any>
+  values: Record<string, unknown>
 }
 
 export function ConfigSection() {
@@ -47,7 +47,7 @@ export function ConfigSection() {
         try {
           parsedValues = JSON.parse(customValues)
         } catch (e) {
-          throw new Error('Invalid JSON in custom values')
+          throw new Error('Invalid JSON in custom values', { cause: e })
         }
       }
 
@@ -76,9 +76,9 @@ export function ConfigSection() {
       const data = await response.json()
       setConfig(data)
       setSuccess('Configuration updated successfully')
-    } catch (error: any) {
+    } catch (error) {
       console.error('Failed to update config:', error)
-      setError(error.message || 'Failed to update configuration')
+      setError((error instanceof Error && error.message) || 'Failed to update configuration')
     }
     setLoading(false)
   }

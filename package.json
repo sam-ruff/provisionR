@@ -1,7 +1,7 @@
 {
   "name": "provisionr-release-tools",
   "private": true,
-  "packageManager": "pnpm@12.16.1",
+  "packageManager": "pnpm@12.18.0",
   "devDependencies": {
     "@codedependant/semantic-release-docker": "8.0.0",
     "@semantic-release/commit-analyzer": "13.0.1",

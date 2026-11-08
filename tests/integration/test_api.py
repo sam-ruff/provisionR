@@ -166,6 +166,23 @@ class TestStaticFileServing:
         response = static_client.get("/..%2fstatic-private%2fsecret.txt")
         assert response.status_code == 404
 
+    def test_symlink_escaping_static_dir_blocked(self, tmp_path: Path):
+        """A symlink inside static/ must not expose files outside it once resolved."""
+        static_dir = tmp_path / "static"
+        static_dir.mkdir()
+        secret = tmp_path / "secret.txt"
+        secret.write_text("secret")
+        (static_dir / "leak.txt").symlink_to(secret)
+        client = TestClient(create_app(static_dir=static_dir))
+        response = client.get("/leak.txt")
+        assert response.status_code == 404
+        assert "secret" not in response.text
+
+    def test_unresolvable_path_returns_404(self, static_client: TestClient):
+        """A NUL byte makes path resolution raise; that must be a 404, not a 500."""
+        response = static_client.get("/assets/%00app.js")
+        assert response.status_code == 404
+
     def test_missing_static_dir_serves_api_only(self, tmp_path: Path):
         """Without a GUI build the API still works and / is not routed."""
         client = TestClient(create_app(static_dir=tmp_path / "absent"))

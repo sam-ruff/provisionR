@@ -1,13 +1,13 @@
-FROM node:26.13.0-alpine@sha256:c6ad9e9c1d80f6eb607c26b4b0a132ff7a2344fad1c78ea3baa2a7d4c8de6d94 AS frontend-builder
-RUN npm install -g pnpm@12.16.1
+FROM node:26.13.0-alpine@sha256:8996bb5821d62a8fd9bb27c1cb07462f3fdce6e47d640c6a881ead0b064ce216 AS frontend-builder
+RUN npm install -g pnpm@12.18.0
 WORKDIR /app/gui
 COPY gui/package.json gui/pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 COPY gui/ ./
 RUN pnpm build
 
-FROM ghcr.io/astral-sh/uv:0.13.6@sha256:af22a52f5eafef3d78e551599d405c02df61919d18028f0cea8eda93bc9986d0 AS uv
-FROM cgr.dev/chainguard/python:latest-dev@sha256:b0bc807f4334fea6adaac0f4dfbde255b9938ca957facb26eaed8bb448fce473 AS python-builder
+FROM ghcr.io/astral-sh/uv:0.13.7@sha256:96f40d3904aad8d0bd010539001d36c8e2188b981e1334471a90c4a1d93bb490 AS uv
+FROM cgr.dev/chainguard/python:latest-dev@sha256:898360ca56a2a65c3facdd36a4e6151133a580aa367195261554e82948921ff1 AS python-builder
 USER root
 COPY --from=uv /uv /usr/local/bin/uv
 ENV UV_PYTHON_DOWNLOADS=never UV_PYTHON=/usr/bin/python3
@@ -18,7 +18,7 @@ COPY main.py ./
 COPY --from=frontend-builder /app/provisionR/static ./provisionR/static
 RUN uv sync --locked --no-dev --no-editable && mkdir /data
 
-FROM cgr.dev/chainguard/python:latest@sha256:b5decb00aa1cb65ab71bb3f6632a44bb8e6fd8d661de1f0342fd513a06837b9a
+FROM cgr.dev/chainguard/python:latest@sha256:1a00964779bf570a8cb2ea4fa086614af19c35069029785c08fcec0c50b66ac0
 ARG GIT_SHA
 ARG VERSION
 LABEL org.opencontainers.image.source="https://github.com/sam-ruff/provisionR" \
