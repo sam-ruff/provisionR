@@ -25,7 +25,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2
         with:
-          version: '0.13.7'
+          version: '0.13.8'
           python-version: '3.15.2'
       - run: uv sync --locked --dev
       - run: uv run --locked ruff check .
@@ -39,10 +39,10 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115
         with:
-          version: 12.18.0
+          version: 12.21.0
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
         with:
-          node-version: '26.13.0'
+          node-version: '26.13.1'
           cache: pnpm
           cache-dependency-path: gui/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile && pnpm build
@@ -62,10 +62,10 @@ jobs:
           fetch-depth: 0
       - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115
         with:
-          version: 12.18.0
+          version: 12.21.0
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
         with:
-          node-version: '26.13.0'
+          node-version: '26.13.1'
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069
