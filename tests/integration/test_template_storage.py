@@ -40,3 +40,34 @@ def test_empty_persistent_directory_reads_bundled_default(monkeypatch, tmp_path)
         response = client.get("/api/v1/templates/default")
         assert response.status_code == 200
         assert response.text == (BUNDLED_TEMPLATES / "default.ks.j2").read_text()
+
+
+def test_upload_larger_than_form_part_limit_is_stored(monkeypatch, tmp_path):
+    # FastAPI 0.164+ adds opt-in body and form limits; file parts must stay
+    # unlimited by default, beyond Starlette's 1 MiB text-field part size.
+    monkeypatch.setenv("PROVISIONR_TEMPLATE_DIR", str(tmp_path / "templates"))
+    template = "# {{ mac }}\n" + "%packages\n@core\n%end\n" * 110_000
+    assert len(template.encode()) > 2 * 1024 * 1024
+    with TestClient(create_app()) as client:
+        response = client.post(
+            "/api/v1/templates",
+            data={"template_name": "large"},
+            files={"file": ("large.ks.j2", template, "text/plain")},
+        )
+        assert response.status_code == 200
+        assert client.get("/api/v1/templates/large").text == template
+
+
+def test_oversized_text_form_field_is_rejected(monkeypatch, tmp_path):
+    # Text fields keep Starlette's 1 MiB part limit and are refused before
+    # anything is written to the template directory.
+    directory = tmp_path / "templates"
+    monkeypatch.setenv("PROVISIONR_TEMPLATE_DIR", str(directory))
+    with TestClient(create_app()) as client:
+        response = client.post(
+            "/api/v1/templates",
+            data={"template_name": "x" * (1024 * 1024 + 1)},
+            files={"file": ("big.ks.j2", "content", "text/plain")},
+        )
+    assert response.status_code == 400
+    assert not any(directory.glob("*.ks.j2"))
